@@ -47,7 +47,7 @@ class AddNewRecipe(QDialog):
         self.decs_rcp_lbl.setStyleSheet("color: rgb(56, 21, 99)")
 
         self.title_rcp_line = QLineEdit(self)
-        self.title_rcp_line.setMaxLength(47)
+        self.title_rcp_line.setMaxLength(90)
         self.title_rcp_line.move(207, 14)
         self.title_rcp_line.resize(300, 25)
         self.title_rcp_line.setFont(self.lines_font)
@@ -102,7 +102,7 @@ class AddNewRecipe(QDialog):
 
     def image_ent_btn_clicked(self):
         file_path, _ = QFileDialog.getOpenFileName(
-            None, 'Выбрать изображение', '', 'Изображения (*.png *.xpm *.jpg *.bmp *.jpeg)')
+            None, 'Выбрать изображение', '/home', 'Изображения (*.png *.xpm *.jpg *.bmp *.jpeg)')
 
         if file_path:
             self.img_info_label.show()

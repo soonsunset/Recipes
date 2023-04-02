@@ -93,6 +93,16 @@ class Authentication(QWidget):
         self.pas_icon_lbl.move(181, 333)
         self.pas_icon_lbl.hide()
 
+        self.back_but = QPushButton(self)
+        self.back_but.hide()
+        self.back_but.move(614, 25)
+        self.back_but.resize(64, 64)
+        self.back_but.setToolTip("Вернуться")
+        self.back_but.setIcon(QIcon('./assets/arrow-left.png'))
+        self.back_but.setIconSize(QSize(64, 64))
+        self.back_but.setStyleSheet(self.descr_styleSheet)
+        self.back_but.clicked.connect(self.back_but_clicked)
+
         # |-------- DataBase КНОПКИ ВХОДА/СОЗДАНИЯ АККАУНТА ---------|
 
         self.create_acc_db_but = QPushButton(self)
@@ -118,6 +128,7 @@ class Authentication(QWidget):
         self.password_field.show()
         self.log_icon_lbl.show()
         self.pas_icon_lbl.show()
+        self.back_but.show()
 
     def evt_login_acc_clicked(self):
         self.login_acc_db_but.show()
@@ -142,6 +153,14 @@ class Authentication(QWidget):
         self.log_icon_lbl.hide()
         self.password_field.hide()
         self.pas_icon_lbl.hide()
+        self.back_but.hide()
         self.create_acc_but.show()
         self.login_acc_but.show()
+
+    def back_but_clicked(self):
+        if self.login_acc_db_but.isVisible():
+            self.login_acc_db_but.hide()
+        if self.create_acc_db_but.isVisible():
+            self.create_acc_db_but.hide()
+        self.update_auth_page()
 

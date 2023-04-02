@@ -89,18 +89,21 @@ class ParsingNewRecipe(QDialog):
         url = self.url_field.text()
 
         if re.match(url_regex, url):
-            self.find_info_from_website(url)
+            req = requests.get(url)
+            html = BeautifulSoup(req.content, "lxml")
+            check = html.find_all("div", class_="emotion-akx9yi")
+            if len(check) == 0 and req.status_code == 200:
+                self.find_info_from_website(url, html)
+            else:
+                QMessageBox.warning(self, "Внимание", "Необходимо использовать корректную ссылку на рецепт.")
+                self.url_field.clear()
         else:
             QMessageBox.warning(self, "Внимание", "Введите URL адрес в соответствии со следующим шаблоном:\n"
                                                   "https://eda.ru/recepty/...")
             self.url_field.clear()
 
-    def find_info_from_website(self, url):
-        req = requests.get(url)
-        html = BeautifulSoup(req.content, "lxml")
-
+    def find_info_from_website(self, url, html):
         recipe_name = html.find("h1")
-
         recipe_name_text = recipe_name.text
 
         all_ingr = html.find_all("span", class_="emotion-mdupit")

@@ -94,6 +94,32 @@ class DataBaseActions:
 
         return received_result[0]
 
+    @staticmethod
+    def update_recipe_request(user_id, title, ingr, descr, encoded_image, old_title):
+        with sqlite3.connect("recipedatabase.db") as db:
+            cursor = db.cursor()
+            if encoded_image is None:
+                query = """UPDATE recipes SET title = ?, ingredients = ?, description = ? WHERE user_id = ? and title = ?"""
+                cursor.execute(query, (title, ingr, descr, user_id, old_title))
+            else:
+                query = """UPDATE recipes SET title = ?, ingredients = ?, description = ?, image = ? WHERE user_id = ? and title = ?"""
+                cursor.execute(query, (title, ingr, descr, encoded_image, user_id, old_title))
+            db.commit()
+
+    @staticmethod
+    def update_profile_info_request(user_id, login, password):
+        with sqlite3.connect("recipedatabase.db") as db:
+            cursor = db.cursor()
+            if login != "" and password != "":
+                query = """UPDATE users SET login = ?, password = ? WHERE id = ?"""
+                cursor.execute(query, (login, password, user_id))
+            if login == "" and password != "":
+                query = """UPDATE users SET password = ? WHERE id = ?"""
+                cursor.execute(query, (password, user_id))
+            if login != "" and password == "":
+                query = """UPDATE users SET login = ? WHERE id = ?"""
+                cursor.execute(query, (login, user_id))
+            db.commit()
 
 
 

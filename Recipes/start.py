@@ -44,8 +44,7 @@ class MainWindow(QMainWindow):
             self.auth.login_acc_db_but.hide()
             self.auth.update_auth_page()
             self.auth.hide()
-            self.profile = UserProfile(self.db_info.login, self.db_info.id)
-            self.profile.show()
+            self.profile_creation()
 
     def evt_db_create_acc(self):
         self.db_user_log()
@@ -55,6 +54,15 @@ class MainWindow(QMainWindow):
         self.auth.hide()
         self.profile = UserProfile(self.db_info.login, self.db_info.id)
         self.profile.show()
+
+    def profile_creation(self):
+        self.profile = UserProfile(self.db_info.login, self.db_info.id)
+        self.profile.log_out_but.clicked.connect(self.log_out_but_clicked)
+        self.profile.show()
+
+    def log_out_but_clicked(self):
+        self.profile.hide()
+        self.auth.show()
 
 
 app = QApplication(sys.argv)

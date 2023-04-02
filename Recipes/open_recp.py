@@ -1,5 +1,5 @@
 import base64
-from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QPlainTextEdit, QWidget
+from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QPlainTextEdit, QWidget, QMessageBox
 from PyQt5.QtGui import QIcon, QImage, QPalette, QBrush, QFont, QPixmap
 from PyQt5.QtCore import QSize, Qt
 from databaseactions import DataBaseActions
@@ -31,11 +31,16 @@ class OpenRecipe(QDialog):
         self.labs_font = QFont("Arial", 12)
 
         self.title_lbl = QLabel(self)
-        text_for_title = self.title
-        self.title_lbl.setText(text_for_title)
+        self.title_lbl.setWordWrap(True)
+        if len(self.title) > 90:
+            self.displayed_title = self.title[:90] + "..."
+            self.title_lbl.setText(self.displayed_title)
+        else:
+            self.title_lbl.setText(self.title)
         self.title_lbl.setFont(self.titlefont)
         self.title_lbl.setStyleSheet("color: rgb(56, 21, 99)")
-        self.title_lbl.move(30, 20)
+        self.title_lbl.move(30, 10)
+        self.title_lbl.resize(500, 40)
 
         self.ingr_lbl_one_word = QLabel("Ингредиенты", self)
         self.ingr_lbl_one_word.move(30, 60)
@@ -46,8 +51,7 @@ class OpenRecipe(QDialog):
 
         self.ingr_lbl_descr = QPlainTextEdit(self)
         self.ingr_lbl_descr.setLineWrapMode(QPlainTextEdit.WidgetWidth)
-        plain_text = general_request_text[0]
-        self.ingr_lbl_descr.setPlainText(plain_text)
+        self.ingr_lbl_descr.setPlainText(general_request_text[0])
         self.ingr_lbl_descr.move(30, 90)
         self.ingr_lbl_descr.resize(350, 80)
         self.ingr_lbl_descr.setReadOnly(True)
@@ -59,8 +63,7 @@ class OpenRecipe(QDialog):
 
         self.instr_lbl_descr = QPlainTextEdit(self)
         self.instr_lbl_descr.setLineWrapMode(QPlainTextEdit.WidgetWidth)
-        plain_text = general_request_text[1]
-        self.instr_lbl_descr.setPlainText(plain_text)
+        self.instr_lbl_descr.setPlainText(general_request_text[1])
         self.instr_lbl_descr.move(30, 222)
         self.instr_lbl_descr.resize(487, 152)
         self.instr_lbl_descr.setReadOnly(True)
@@ -85,12 +88,16 @@ class OpenRecipe(QDialog):
         self.open_img_btn.clicked.connect(self.open_img_btn_clicked)
 
     def open_img_btn_clicked(self):
-        self.open_image = OpenImage(self.user_id, self.title)
-        self.open_image.show()
+        result_from_db = DataBaseActions.get_recipe_image(self.user_id, self.title)
+        if result_from_db is None:
+            QMessageBox.warning(self, "Внимание", "Для данного рецепта отсутствует изображение.")
+        else:
+            self.open_image = OpenImage(self.user_id, self.title, result_from_db)
+            self.open_image.show()
 
 
 class OpenImage(QWidget):
-    def __init__(self, user_id, title):
+    def __init__(self, user_id, title, result_from_db):
         super().__init__()
         self.user_id = user_id
         self.title = title
@@ -100,11 +107,8 @@ class OpenImage(QWidget):
 
         self.window_width = 600
         self.window_height = 500
-
         self.resize(self.window_width, self.window_height)
         self.setFixedSize(self.size())
-
-        result_from_db = DataBaseActions.get_recipe_image(self.user_id, self.title)
 
         pixmap = QPixmap()
         pixmap.loadFromData(base64.b64decode(result_from_db))

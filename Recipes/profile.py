@@ -1,14 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QListWidget, QHBoxLayout, QVBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QListWidget, QHBoxLayout, QVBoxLayout, QMessageBox, QLineEdit
 from PyQt5.QtGui import QIcon, QImage, QPalette, QBrush, QPixmap, QFont
 from PyQt5.QtCore import QSize
 from pars_recp import ParsingNewRecipe
 from open_recp import OpenRecipe
 from add_new_recp import AddNewRecipe
+from edit_recp import EditRecipe
 from databaseactions import DataBaseActions
-
-
-class DatabaseRequests:
-    pass
 
 
 class UserProfile(QWidget):
@@ -54,12 +51,107 @@ class UserProfile(QWidget):
         self.recipe_list_label_font = QFont("Garamond", 17)
         self.recipe_list_label.setFont(self.recipe_list_label_font)
 
+        self.log_out_but = QPushButton(self)
+        self.log_out_but.move(614, 25)
+        self.log_out_but.resize(64, 64)
+        self.log_out_but.setToolTip("Выйти")
+        self.log_out_but.setIcon(QIcon('./assets/log_out.png'))
+        self.log_out_but.setIconSize(QSize(64, 64))
+
+        self.descr_styleSheet = """QPushButton {
+                                                background-color: rgb(255, 255, 255);
+                                                color: black;
+                                                border: none;
+                                                }
+
+                                   QPushButton:hover {
+                                                       background-color: rgb(242, 242, 242);
+                                                    }
+                                                """
+
+        self.edit_profile_info = QPushButton(self)
+        self.edit_profile_info.move(491, 15)
+        self.edit_profile_info.resize(20, 20)
+        self.edit_profile_info.setToolTip("Редактировать")
+        self.edit_profile_info.setIcon(QIcon('./assets/write_pen_icon.png'))
+        self.edit_profile_info.setIconSize(QSize(24, 24))
+        self.edit_profile_info.setStyleSheet(self.descr_styleSheet)
+        self.edit_profile_info.clicked.connect(self.edit_profile_btn_clicked)
+
+
         # |---------------- ВИДЖЕТ СПИСКА РЕЦЕПТОВ ----------------|
 
         widg_for_recipes = WidgetForRecipesList(self.user_login, self.user_id)
         widg_for_recipes.setParent(self)
-        widg_for_recipes.show()
         widg_for_recipes.move(140, 210)
+
+        self.log_out_but.setStyleSheet(widg_for_recipes.descr_styleSheet)
+
+        widg_for_recipes.show()
+
+    def edit_profile_btn_clicked(self):
+        self.profile_name_label.hide()
+        self.profile_login_db.hide()
+        self.edit_profile_info.hide()
+
+        self.log_pas_change_font = QFont("Garamond", 17)
+
+        self.save_profile_info = QPushButton(self)
+        self.save_profile_info.move(491, 15)
+        self.save_profile_info.resize(20, 20)
+        self.save_profile_info.setToolTip("Сохранить")
+        self.save_profile_info.setIcon(QIcon('./assets/check-square.png'))
+        self.save_profile_info.setIconSize(QSize(24, 24))
+        self.save_profile_info.setStyleSheet(self.descr_styleSheet)
+        self.save_profile_info.show()
+        self.save_profile_info.clicked.connect(self.save_profile_info_clicked)
+
+        self.login_change_lbl = QLabel("Логин:", self)
+        self.login_change_lbl.move(310, 17)
+        self.login_change_lbl.setFont(self.log_pas_change_font)
+        self.login_change_lbl.show()
+
+        self.password_change_lbl = QLabel("Пароль:", self)
+        self.password_change_lbl.move(310, 83)
+        self.password_change_lbl.setFont(self.log_pas_change_font)
+        self.password_change_lbl.show()
+
+        self.lines_font = QFont("Arial", 12)
+
+        self.login_change_line = QLineEdit(self)
+        self.login_change_line.setMaxLength(25)
+        self.login_change_line.move(310, 48)
+        self.login_change_line.resize(200, 25)
+        self.login_change_line.setFont(self.lines_font)
+        self.login_change_line.show()
+
+        self.password_change_line = QLineEdit(self)
+        self.password_change_line.setMaxLength(25)
+        self.password_change_line.move(310, 114)
+        self.password_change_line.resize(200, 25)
+        self.password_change_line.setFont(self.lines_font)
+        self.password_change_line.show()
+
+    def save_profile_info_clicked(self):
+        self.new_login = self.login_change_line.text()
+        self.new_password = self.password_change_line.text()
+
+        DataBaseActions.update_profile_info_request(self.user_id, self.new_login, self.new_password)
+
+        self.save_profile_info.hide()
+        self.login_change_lbl.hide()
+        self.password_change_lbl.hide()
+        self.login_change_line.clear()
+        self.login_change_line.hide()
+        self.password_change_line.clear()
+        self.password_change_line.hide()
+
+        if self.new_login != "":
+            self.profile_login_db.setText(self.new_login)
+
+        self.profile_login_db.show()
+        self.profile_name_label.show()
+        self.edit_profile_info.show()
 
 
 class WidgetForRecipesList(QWidget):
@@ -67,6 +159,22 @@ class WidgetForRecipesList(QWidget):
         super().__init__()
         self.user_login = login
         self.user_id = user_id
+
+        self.buts_font = QFont("Garamond", 14)
+        self.buts_font.setBold(True)
+        self.descr_styleSheet = """
+                                            QPushButton {
+                                                background-color: rgb(0, 0, 0);
+                                            }
+
+                                            QPushButton {
+                                                color: white;
+                                            }
+
+                                            QPushButton:hover {
+                                                background-color: rgb(255, 138, 54);
+                                            }
+                                        """
 
         self.resize(430, 270)
 
@@ -82,29 +190,19 @@ class WidgetForRecipesList(QWidget):
         self.recipes_list_widg.addItems(titles)
         self.recipes_list_widg.sortItems()
 
-        self.buts_font = QFont("Garamond", 14)
-        self.buts_font.setBold(True)
-        self.descr_styleSheet = """
-                                    QPushButton {
-                                        background-color: rgb(0, 0, 0);
-                                    }
-
-                                    QPushButton {
-                                        color: white;
-                                    }
-
-                                    QPushButton:hover {
-                                        background-color: rgb(255, 138, 54);
-                                    }
-                                """
-
         self.open_recipe_btn = QPushButton("Открыть", self)
         self.open_recipe_btn.setToolTip("Открыть описание рецепта")
         self.open_recipe_btn.clicked.connect(self.open_recipe_btn_clicked)
         self.open_recipe_btn.setFont(self.buts_font)
         self.open_recipe_btn.setStyleSheet(self.descr_styleSheet)
 
-        self.add_recipe_btn = QPushButton(" Добавить ", self)
+        self.edit_recipe_btn = QPushButton("Редактировать", self)
+        self.edit_recipe_btn.setToolTip("Редактировать рецепт")
+        self.edit_recipe_btn.clicked.connect(self.edit_recipe_btn_clicked)
+        self.edit_recipe_btn.setFont(self.buts_font)
+        self.edit_recipe_btn.setStyleSheet(self.descr_styleSheet)
+
+        self.add_recipe_btn = QPushButton("Добавить", self)
         self.add_recipe_btn.setToolTip("Самостоятельно добавить новый рецепт")
         self.add_recipe_btn.clicked.connect(self.add_recipe_btn_clicked)
         self.add_recipe_btn.setFont(self.buts_font)
@@ -136,6 +234,8 @@ class WidgetForRecipesList(QWidget):
         self.buttons_layout.addStretch()
         self.buttons_layout.addWidget(self.open_recipe_btn)
         self.buttons_layout.addStretch()
+        self.buttons_layout.addWidget(self.edit_recipe_btn)
+        self.buttons_layout.addStretch()
         self.buttons_layout.addWidget(self.add_recipe_btn)
         self.buttons_layout.addStretch()
         self.buttons_layout.addWidget(self.find_recipe_btn)
@@ -152,6 +252,34 @@ class WidgetForRecipesList(QWidget):
                 self.open_recp.show()
         else:
             QMessageBox.warning(self, "Внимание", "Выберите рецепт из списка.")
+
+    def edit_recipe_btn_clicked(self):
+        items_list = self.recipes_list_widg.selectedItems()
+        if len(items_list) != 0:
+            for item in items_list:
+                title = item.text()
+                self.edit_recipe = EditRecipe(self.user_login, self.user_id, title)
+                self.edit_recipe.save_changes_but.clicked.connect(self.change_rcp_clicked)
+                self.edit_recipe.show()
+        else:
+            QMessageBox.warning(self, "Внимание", "Выберите рецепт из списка.")
+
+    def change_rcp_clicked(self):
+        title_rcp = self.edit_recipe.title_rcp_line.text()
+        ingr_rcp = self.edit_recipe.ingr_rcp_line.toPlainText()
+        descr_rcp = self.edit_recipe.decs_rcp_line.toPlainText()
+        encoded_image = self.edit_recipe.encoded_string
+        old_title = self.edit_recipe.old_title
+
+        if title_rcp != "" and ingr_rcp != "" and descr_rcp != "":
+            DataBaseActions.update_recipe_request(self.user_id, title_rcp, ingr_rcp, descr_rcp, encoded_image, old_title)
+            self.edit_recipe.hide()
+            current_titles = self.get_list_from_db()
+            self.recipes_list_widg.clear()
+            self.recipes_list_widg.addItems(current_titles)
+            self.recipes_list_widg.sortItems()
+        else:
+            QMessageBox.information(self.edit_recipe, "Внимание", "Заполните необходимую информацию.")
 
     def add_recipe_btn_clicked(self):
         self.new_recp = AddNewRecipe(self.user_login, self.user_id)
